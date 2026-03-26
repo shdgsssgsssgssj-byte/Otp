@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iVASMS OTP Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status-online {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            background: #f3f4f6;
+            padding: 10px 20px;
+            border-radius: 12px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        
+        .numbers-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .number-item {
+            background: #f9fafb;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: monospace;
+        }
+        
+        .add-number-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .add-number-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .add-number-form input:focus {
+            border-color: #667eea;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s, background 0.2s;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .otp-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .otp-table th,
+        .otp-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .otp-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .otp-code {
+            background: #667eea20;
+            color: #667eea;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 8px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .otp-code:hover {
+            background: #667eea40;
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .auto-refresh {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 10px;
+            text-align: right;
+        }
+        
+        .last-check {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: auto;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 iVASMS OTP Monitor</h1>
+            <div class="status-bar">
+                <div class="status-badge" id="monitorStatus">🟡 Checking...</div>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="otpCount">0</div>
+                        <div class="stat-label">Total OTPs</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="numberCount">0</div>
+                        <div class="stat-label">Saved Numbers</div>
+                    </div>
+                </div>
+                <div class="last-check" id="lastCheck">Last check: --:--:--</div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">📞 Numbers List</div>
+                <div class="control-buttons">
+                    <button onclick="checkNow()" id="checkBtn" class="btn-success">🔄 Check Now</button>
+                    <button onclick="refreshSession()" id="refreshBtn" class="btn-secondary">🔄 Refresh Login</button>
+                    <button onclick="clearCache()" id="clearBtn" class="btn-warning">🗑 Clear OTPs</button>
+                </div>
+                
+                <div class="numbers-list" id="numbersList">
+                    <div class="empty-state">No numbers added yet. Add one below!</div>
+                </div>
+                
+                <div class="add-number-form">
+                    <input type="text" id="numberInput" placeholder="+923001234567" autocomplete="off">
+                    <button onclick="addNumber()">➕ Add Number</button>
+                </div>
+                <div class="auto-refresh" style="margin-top: 10px;">
+                    💡 Numbers are for reference only. OTPs from all numbers will appear.
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">🔐 Received OTPs</div>
+                <div id="otpTable">
+                    <div class="empty-state">
+                        <div class="loading"></div> Loading OTPs...
+                    </div>
+                </div>
+                <div class="auto-refresh">
+                    🔄 Auto-refreshes every 10 seconds | Click on OTP to copy
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let autoRefreshInterval;
+        
+        function showToast(message) {
+            let toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                const statusEl = document.getElementById('monitorStatus');
+                if (data.ivasms_configured) {
+                    if (data.session_active) {
+                        statusEl.innerHTML = '🟢 iVASMS Connected';
+                        statusEl.className = 'status-badge status-online';
+                    } else {
+                        statusEl.innerHTML = '🟡 iVASMS Not Logged In';
+                        statusEl.className = 'status-badge status-warning';
+                    }
+                } else {
+                    statusEl.innerHTML = '🔴 iVASMS Not Configured';
+                    statusEl.className = 'status-badge status-offline';
+                }
+                
+                document.getElementById('otpCount').innerText = data.total_otps;
+                document.getElementById('numberCount').innerText = data.total_numbers;
+                
+                if (data.last_check) {
+                    document.getElementById('lastCheck').innerHTML = `Last check: ${data.last_check}`;
+                }
+            } catch(e) {
+                console.error('Status fetch error:', e);
+            }
+        }
+        
+        async function fetchOTPs() {
+            try {
+                const res = await fetch('/api/otps');
+                const otps = await res.json();
+                updateOTPTable(otps);
+            } catch(e) {
+                console.error('OTP fetch error:', e);
+            }
+        }
+        
+        async function fetchNumbers() {
+            try {
+                const res = await fetch('/api/numbers');
+                const numbers = await res.json();
+                updateNumbersList(numbers);
+            } catch(e) {
+                console.error('Numbers fetch error:', e);
+            }
+        }
+        
+        function updateOTPTable(otps) {
+            const container = document.getElementById('otpTable');
+            
+            if (!otps || otps.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 No OTPs received yet. Click "Check Now" to fetch!</div>';
+                return;
+            }
+            
+            let html = `<table class="otp-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>OTP</th>
+                        <th>Phone</th>
+                        <th>Service</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            for (let otp of otps) {
+                html += `<tr>
+                    <td style="font-size: 12px;">${otp.time}</td>
+                    <td><span class="otp-code" onclick="copyOTP('${otp.otp}')">📋 ${otp.otp}</span></td>
+                    <td><code>${otp.phone}</code></td>
+                    <td>${otp.service}</td>
+                </tr>`;
+            }
+            
+            html += `</tbody>
+            </table>`;
+            container.innerHTML = html;
+        }
+        
+        function updateNumbersList(numbers) {
+            const container = document.getElementById('numbersList');
+            
+            if (!numbers || numbers.length === 0) {
+                container.innerHTML = '<div class="empty-state">📞 No numbers added yet. Add one below!</div>';
+                return;
+            }
+            
+            let html = '';
+            for (let number of numbers) {
+                html += `<div class="number-item">
+                    <code>${number}</code>
+                    <button class="delete-btn" onclick="removeNumber('${number}')">Remove</button>
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        async function addNumber() {
+            const input = document.getElementById('numberInput');
+            const number = input.value.trim();
+            
+            if (!number) {
+                showToast('Please enter a number');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/numbers', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({number: number})
+                });
+                const data = await res.json();
+                
+                if (data.status === 'added') {
+                    input.value = '';
+                    fetchNumbers();
+                    showToast(`✅ Added ${number}`);
+                } else {
+                    showToast(data.message || 'Error adding number');
+                }
+            } catch(e) {
+                showToast('Error adding number');
+            }
+        }
+        
+        async function removeNumber(number) {
+            try {
+                const res = await fetch('/api/numbers', {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({number: number})
+                });
+                const data = await res.json();
+                
+                if (data.status === 'removed') {
+                    fetchNumbers();
+                    showToast(`✅ Removed ${number}`);
+                }
+            } catch(e) {
+                showToast('Error removing number');
+            }
+        }
+        
+        async function checkNow() {
+            const btn = document.getElementById('checkBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Checking...';
+            
+            try {
+                const res = await fetch('/api/check', {method: 'POST'});
+                const data = await res.json();
+                showToast(`✅ Checked! Found ${data.new_otps} new OTPs. Total: ${data.total_otps}`);
+                fetchOTPs();
+                fetchStatus();
+            } catch(e) {
+                showToast('❌ Error checking OTPs');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔄 Check Now';
+            }
+        }
+        
+        async function refreshSession() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Refreshing...';
+            
+            try {
+                const res = await fetch('/api/refresh', {method: 'POST'});
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Session refreshed!');
+                } else {
+                    showToast('❌ Login failed. Check credentials!');
+                }
+                fetchStatus();
+            } catch(e) {
+                showToast('❌ Error refreshing session');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔄 Refresh Login';
+            }
+        }
+        
+        async function clearCache() {
+            if (confirm('⚠️ Are you sure? This will delete all OTPs.')) {
+                const btn = document.getElementById('clearBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Clearing...';
+                
+                try {
+                    await fetch('/api/clear', {method: 'POST'});
+                    fetchOTPs();
+                    fetchStatus();
+                    showToast('✅ All OTPs cleared!');
+                } catch(e) {
+                    showToast('❌ Error clearing cache');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '🗑 Clear OTPs';
+                }
+            }
+        }
+        
+        function copyOTP(otp) {
+            navigator.clipboard.writeText(otp);
+            showToast(`📋 Copied: ${otp}`);
+        }
+        
+        // Auto-refresh every 10 seconds
+        setInterval(() => {
+            fetchOTPs();
+            fetchNumbers();
+            fetchStatus();
+        }, 10000);
+        
+        // Initial load
+        fetchStatus();
+        fetchOTPs();
+        fetchNumbers();
+    </script>
+</body>
+</html>
